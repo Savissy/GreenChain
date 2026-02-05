@@ -175,6 +175,75 @@ CREATE TABLE `votes` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `governance_members`
+--
+
+CREATE TABLE `governance_members` (
+  `wallet_address` varchar(255) NOT NULL,
+  `nft_policy_id` varchar(120) NOT NULL,
+  `nft_asset_name` varchar(120) NOT NULL,
+  `weight` int(11) DEFAULT 1,
+  `minted_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `burned_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `governance_proposals`
+--
+
+CREATE TABLE `governance_proposals` (
+  `id` int(11) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `summary` text DEFAULT NULL,
+  `proposal_hash` varchar(255) NOT NULL,
+  `proposer_wallet` varchar(255) NOT NULL,
+  `status` enum('draft','active','closed','executed') DEFAULT 'draft',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `deadline` datetime DEFAULT NULL,
+  `yes_weight` int(11) DEFAULT 0,
+  `no_weight` int(11) DEFAULT 0,
+  `abstain_weight` int(11) DEFAULT 0,
+  `quorum` int(11) DEFAULT 1,
+  `executed_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `governance_votes`
+--
+
+CREATE TABLE `governance_votes` (
+  `id` int(11) NOT NULL,
+  `proposal_id` int(11) NOT NULL,
+  `wallet_address` varchar(255) NOT NULL,
+  `choice` enum('yes','no','abstain') NOT NULL,
+  `weight` int(11) DEFAULT 1,
+  `message` text DEFAULT NULL,
+  `signature` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `governance_executions`
+--
+
+CREATE TABLE `governance_executions` (
+  `id` int(11) NOT NULL,
+  `proposal_id` int(11) NOT NULL,
+  `executor_wallet` varchar(255) NOT NULL,
+  `action` text NOT NULL,
+  `tx_hash` varchar(255) DEFAULT NULL,
+  `executed_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 --
 -- Indexes for dumped tables
 --
@@ -236,6 +305,33 @@ ALTER TABLE `votes`
   ADD KEY `user_id` (`user_id`);
 
 --
+-- Indexes for table `governance_members`
+--
+ALTER TABLE `governance_members`
+  ADD PRIMARY KEY (`wallet_address`);
+
+--
+-- Indexes for table `governance_proposals`
+--
+ALTER TABLE `governance_proposals`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `proposal_hash` (`proposal_hash`);
+
+--
+-- Indexes for table `governance_votes`
+--
+ALTER TABLE `governance_votes`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `proposal_wallet` (`proposal_id`,`wallet_address`);
+
+--
+-- Indexes for table `governance_executions`
+--
+ALTER TABLE `governance_executions`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `proposal_id` (`proposal_id`);
+
+--
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -288,6 +384,24 @@ ALTER TABLE `votes`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `governance_proposals`
+--
+ALTER TABLE `governance_proposals`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `governance_votes`
+--
+ALTER TABLE `governance_votes`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `governance_executions`
+--
+ALTER TABLE `governance_executions`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- Constraints for dumped tables
 --
 
@@ -322,6 +436,18 @@ ALTER TABLE `transactions`
 ALTER TABLE `votes`
   ADD CONSTRAINT `votes_ibfk_1` FOREIGN KEY (`proposal_id`) REFERENCES `proposals` (`id`),
   ADD CONSTRAINT `votes_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
+
+--
+-- Constraints for table `governance_votes`
+--
+ALTER TABLE `governance_votes`
+  ADD CONSTRAINT `gov_votes_ibfk_1` FOREIGN KEY (`proposal_id`) REFERENCES `governance_proposals` (`id`);
+
+--
+-- Constraints for table `governance_executions`
+--
+ALTER TABLE `governance_executions`
+  ADD CONSTRAINT `gov_exec_ibfk_1` FOREIGN KEY (`proposal_id`) REFERENCES `governance_proposals` (`id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

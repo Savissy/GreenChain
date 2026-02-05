@@ -77,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
     <li><a href="index.php" class="active">Home</a></li>
     <li><a href="dashboard.php">Dashboard</a></li>
     <li><a href="eco submission.php">Eco action submission</a></li>
-    <li><a href="governance.php">Governance</a></li>
+    <li><a href="governance/index.php">Governance</a></li>
     <li><a href="nfts.php">NFTs</a></li>
   </ul>
 
